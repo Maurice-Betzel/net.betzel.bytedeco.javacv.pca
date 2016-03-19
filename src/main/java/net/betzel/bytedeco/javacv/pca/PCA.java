@@ -61,7 +61,7 @@ public class PCA {
         long contourCount = contours.size();
         System.out.println("Countour count " + contourCount);
 
-        for (int i = 0; i < contourCount; ++i) {
+        for (long i = 0; i < contourCount; ++i) {
             // Calculate the area of each contour
             Mat contour = contours.get(i);
             double area = contourArea(contour);

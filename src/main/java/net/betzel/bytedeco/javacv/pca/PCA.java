@@ -100,7 +100,7 @@ public class PCA {
     }
 
     // contour is a one dimensional array
-    private void principalComponentAnalysis(Mat contour, int entry, Mat matrix) {
+    private void principalComponentAnalysis(Mat contour, long entry, Mat matrix) {
         //Construct a buffer used by the pca analysis
         Mat data_pts = new Mat(contour.rows(), 2, CV_64FC1);
         IntIndexer contourIndexer = contour.createIndexer();

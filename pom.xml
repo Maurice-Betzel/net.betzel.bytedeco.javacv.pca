@@ -36,7 +36,7 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <mainClass>net.betzel.bytedeco.javacv.pca.PCA</mainClass>
+                    <mainClass>net.betzel.bytedeco.javacv.pca.PrincipalComponentAnalysis</mainClass>
                 </configuration>
             </plugin>
             <plugin>

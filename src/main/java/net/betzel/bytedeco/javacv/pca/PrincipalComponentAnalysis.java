@@ -16,19 +16,19 @@ import static org.bytedeco.javacpp.opencv_core.*;
 import static org.bytedeco.javacpp.opencv_imgproc.*;
 
 /**
- * PCA with JavaCV
+ * PrincipalComponentAnalysis with JavaCV
  * https://github.com/bytedeco/javacv
- * Based on "Introduction to Principal Component Analysis (PCA) ":
+ * Based on "Introduction to Principal Component Analysis (PrincipalComponentAnalysis) ":
  * http://docs.opencv.org/3.0.0/d1/dee/tutorial_introduction_to_pca.html
  *
  * @author Maurice Betzel
  */
 
-public class PCA {
+public class PrincipalComponentAnalysis {
 
     public static void main(String[] args) {
         try {
-            new PCA().execute(args);
+            new PrincipalComponentAnalysis().execute(args);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -38,47 +38,47 @@ public class PCA {
         // If no params provided, compute the default image
         BufferedImage bufferedImage = args.length >= 1 ? ImageIO.read(new File(args[0])) : ImageIO.read(this.getClass().getResourceAsStream("/images/shapes2.jpg"));
         System.out.println("Image type: " + bufferedImage.getType());
-        // Convert BufferedImage to Mat
-        Mat matrix = new OpenCVFrameConverter.ToMat().convert(new Java2DFrameConverter().convert(bufferedImage));
-        printMat(matrix);
-        Mat gray = new Mat();
-        cvtColor(matrix, gray, COLOR_BGR2GRAY);
-        //Normalize
-        Mat mask = new Mat();
-        Mat denoised = new Mat();
-        GaussianBlur(gray, denoised, new Size(5, 5), 0);
-        threshold(denoised, mask, 0, 255, THRESH_BINARY_INV | THRESH_OTSU);
-        normalize(gray, gray, 0, 255, NORM_MINMAX, -1, mask);
-        mask.release();
-        denoised.release();
-        // Convert image to binary
-        Mat bin = new Mat();
-        threshold(gray, bin, 150, 255, THRESH_BINARY);
-        // Find contours
-        Mat hierarchy = new Mat();
-        MatVector contours = new MatVector();
-        findContours(bin, contours, hierarchy, RETR_TREE, CHAIN_APPROX_NONE);
-        long contourCount = contours.size();
-        System.out.println("Countour count " + contourCount);
+        // Convert BufferedImage to Mat and create AutoCloseable objects
+        try (Mat matrix = new OpenCVFrameConverter.ToMat().convert(new Java2DFrameConverter().convert(bufferedImage));
+             Mat mask = new Mat();
+             Mat gray = new Mat();
+             Mat denoised = new Mat();
+             Mat bin = new Mat();
+             Mat hierarchy = new Mat();
+             MatVector contours = new MatVector()) {
 
-        for (int i = 0; i < contourCount; ++i) {
-            // Calculate the area of each contour
-            Mat contour = contours.get(i);
-            double area = contourArea(contour);
-            // Ignore contours that are too small or too large
-            if (area > 128 && area < 8192) {
-                principalComponentAnalysis(contour, i, matrix);
+            printMat(matrix);
+            cvtColor(matrix, gray, COLOR_BGR2GRAY);
+            //Normalize
+            GaussianBlur(gray, denoised, new Size(5, 5), 0);
+            threshold(denoised, mask, 0, 255, THRESH_BINARY_INV | THRESH_OTSU);
+            normalize(gray, gray, 0, 255, NORM_MINMAX, -1, mask);
+            // Convert image to binary
+            threshold(gray, bin, 150, 255, THRESH_BINARY);
+            // Find contours
+            findContours(bin, contours, hierarchy, RETR_TREE, CHAIN_APPROX_NONE);
+            long contourCount = contours.size();
+            System.out.println("Countour count " + contourCount);
+
+            for (int i = 0; i < contourCount; ++i) {
+                // Calculate the area of each contour
+                Mat contour = contours.get(i);
+                double area = contourArea(contour);
+                // Ignore contours that are too small or too large
+                if (area > 128 && area < 8192) {
+                    principalComponentAnalysis(contour, i, matrix);
+                }
             }
+            CanvasFrame canvas = new CanvasFrame("PrincipalComponentAnalysis", 1);
+            canvas.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);
+            canvas.setCanvasSize(320, 240);
+            OpenCVFrameConverter converter = new OpenCVFrameConverter.ToIplImage();
+            canvas.showImage(converter.convert(matrix));
         }
-        CanvasFrame canvas = new CanvasFrame("PCA", 1);
-        canvas.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);
-        canvas.setCanvasSize(320, 240);
-        OpenCVFrameConverter converter = new OpenCVFrameConverter.ToIplImage();
-        canvas.showImage(converter.convert(matrix));
     }
 
     // contour is a one dimensional array
-    private void principalComponentAnalysis(Mat contour, int entry, Mat matrix) {
+    private void principalComponentAnalysis(Mat contour, int entry, Mat matrix) throws Exception {
         //Construct a buffer used by the pca analysis
         Mat data_pts = new Mat(contour.rows(), 2, CV_64FC1);
         IntIndexer contourIndexer = contour.createIndexer();
@@ -89,10 +89,10 @@ public class PCA {
         }
         contourIndexer.release();
         data_idx.release();
-        //Perform PCA analysis
+        //Perform PrincipalComponentAnalysis analysis
         ArrayList<Point2d> eigen_vecs = new ArrayList(2);
         ArrayList<Double> eigen_val = new ArrayList(2);
-        org.bytedeco.javacpp.opencv_core.PCA pca_analysis = new org.bytedeco.javacpp.opencv_core.PCA(data_pts, new Mat(), CV_PCA_DATA_AS_ROW);
+        PCA pca_analysis = new PCA(data_pts, new Mat(), CV_PCA_DATA_AS_ROW);
         Mat mean = pca_analysis.mean();
         Mat eigenVector = pca_analysis.eigenvectors();
         Mat eigenValues = pca_analysis.eigenvalues();
@@ -123,6 +123,7 @@ public class PCA {
         double point2y = cntrY - 2 * hypotenuse2 * Math.sin(radian2);
         drawAxis(matrix, radian1, cntr, point1x, point1y, Scalar.BLUE);
         drawAxis(matrix, radian2, cntr, point2x, point2y, Scalar.CYAN);
+
     }
 
     private void drawAxis(Mat matrix, double radian, Point cntr, double x, double y, Scalar colour) {

@@ -35,7 +35,7 @@ public class PCA {
     }
 
     private void execute(String[] args) throws Exception {
-        // If no params provided, compute the defaut image
+        // If no params provided, compute the default image
         BufferedImage bufferedImage = args.length >= 1 ? ImageIO.read(new File(args[0])) : ImageIO.read(this.getClass().getResourceAsStream("/images/shapes2.jpg"));
         System.out.println("Image type: " + bufferedImage.getType());
         // Convert BufferedImage to Mat

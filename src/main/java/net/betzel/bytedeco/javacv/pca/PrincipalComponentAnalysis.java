@@ -34,8 +34,6 @@ public class PrincipalComponentAnalysis {
 
     private static final Slf4jLogger logger = (Slf4jLogger) org.bytedeco.javacpp.tools.Logger.create(PrincipalComponentAnalysis.class);
 
-    //private static final Logger logger = org.slf4j.LoggerFactory.getLogger("PrincipalComponentAnalysis");
-
     public static void main(String[] args) {
         try {
             logger.info(String.valueOf(logger.isDebugEnabled()));

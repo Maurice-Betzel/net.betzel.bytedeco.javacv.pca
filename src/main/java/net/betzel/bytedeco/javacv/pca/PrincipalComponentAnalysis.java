@@ -3,12 +3,14 @@ package net.betzel.bytedeco.javacv.pca;
 import org.bytedeco.javacpp.indexer.DoubleIndexer;
 import org.bytedeco.javacpp.indexer.IntIndexer;
 import org.bytedeco.javacpp.opencv_core.*;
+import org.bytedeco.javacpp.opencv_core.Point;
 import org.bytedeco.javacpp.tools.Slf4jLogger;
 import org.bytedeco.javacv.CanvasFrame;
 import org.bytedeco.javacv.Java2DFrameConverter;
 import org.bytedeco.javacv.OpenCVFrameConverter;
 
 import javax.imageio.ImageIO;
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
@@ -80,11 +82,15 @@ public class PrincipalComponentAnalysis {
                     principalComponentAnalysis(contour, i, matrix);
                 }
             }
-            CanvasFrame canvas = new CanvasFrame("PrincipalComponentAnalysis", 1);
-            canvas.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);
-            canvas.setCanvasSize(320, 240);
-            OpenCVFrameConverter converter = new OpenCVFrameConverter.ToIplImage();
-            canvas.showImage(converter.convert(matrix));
+            CanvasFrame canvasFrame = new CanvasFrame("PrincipalComponentAnalysis", 1);
+            canvasFrame.setDefaultCloseOperation(javax.swing.JFrame.EXIT_ON_CLOSE);
+            canvasFrame.setCanvasSize(320, 240);
+            Canvas canvas = canvasFrame.getCanvas();
+            canvasFrame.getContentPane().removeAll();
+            ScrollPane scrollPane = new ScrollPane();
+            scrollPane.add(canvas);
+            canvasFrame.add(scrollPane);
+            canvasFrame.showImage(new OpenCVFrameConverter.ToIplImage().convert(matrix));
         }
     }
 
@@ -172,8 +178,7 @@ public class PrincipalComponentAnalysis {
         }
     }
 
-
-    public static void printMat(Mat mat) {
+    private static void printMat(Mat mat) {
         System.out.println("Channels: " + mat.channels());
         System.out.println("Rows: " + mat.rows());
         System.out.println("Cols: " + mat.cols());
